@@ -13,6 +13,7 @@ interface ChatWindowProps {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
+  newSearchTerm: string;
   onReset: () => void;
   onSendHiddenMessage: (action: string, payload: unknown) => Promise<void>;
 }
@@ -38,10 +39,14 @@ export default function ChatWindow({
   messages,
   isLoading,
   error,
+  newSearchTerm,
   onReset,
   onSendHiddenMessage,
 }: ChatWindowProps) {
   const bottomRef = useScrollToBottom(messages);
+  const messageLoading: ChatMessage | null = isLoading
+    ? messages.at(-2) || null
+    : null;
 
   return (
     <div className="chat-window">
@@ -110,7 +115,12 @@ export default function ChatWindow({
                   {message.content &&
                     (message.role === "assistant" ? (
                       // Nếu là AI (backend gửi) -> Dùng ActivityMessage
-                      <ActivityMessage message={message.content} />
+                      <ActivityMessage
+                        message={
+                          messageLoading?.content ||
+                          `Đang cập nhật tìm kiếm: ${newSearchTerm}`
+                        }
+                      />
                     ) : (
                       // Nếu là User -> Giữ nguyên ReactMarkdown như cũ
                       <ReactMarkdown

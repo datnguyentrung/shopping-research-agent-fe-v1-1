@@ -1,5 +1,6 @@
 import { ChatInput, ChatWindow, Sidebar } from "@/components";
 import { useChatSSE } from "@/hooks/useChatSSE";
+import { useState } from "react";
 import "./App.scss";
 
 export default function App() {
@@ -42,9 +43,15 @@ export default function App() {
     sendHiddenMessage,
     resetChat,
   } = useChatSSE();
+  const [newSearchTerm, setNewSearchTerm] = useState("");
 
   const handleSendMessage = async (content: string) => {
     await sendMessage(content);
+  };
+
+  const handleSendHiddenMessage = async (action: string, payload: unknown) => {
+    await sendHiddenMessage(action, payload);
+    setNewSearchTerm(payload as string);
   };
 
   return (
@@ -54,8 +61,9 @@ export default function App() {
         <ChatWindow
           messages={messages}
           isLoading={isLoading}
+          newSearchTerm={newSearchTerm}
           onReset={resetChat}
-          onSendHiddenMessage={sendHiddenMessage}
+          onSendHiddenMessage={handleSendHiddenMessage}
           error={error}
         />
         <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
