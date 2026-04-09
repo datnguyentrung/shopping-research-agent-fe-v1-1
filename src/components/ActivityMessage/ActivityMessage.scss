@@ -1,0 +1,49 @@
+.activity-message {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  // padding: 10px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #6b7280;
+  box-sizing: border-box;
+}
+
+.activity-message__text {
+  margin: 0;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #6b7280;
+  letter-spacing: 0.01em;
+  animation: activity-message-fade 1.9s ease-in-out infinite;
+  will-change: opacity, color;
+}
+
+@keyframes activity-message-fade {
+  0%,
+  100% {
+    opacity: 0.45;
+    color: #9ca3af;
+  }
+
+  50% {
+    opacity: 1;
+    color: #4b5563;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-message__text {
+    animation: none;
+    opacity: 0.9;
+  }
+}
