@@ -44,9 +44,6 @@ export default function ChatWindow({
   onSendHiddenMessage,
 }: ChatWindowProps) {
   const bottomRef = useScrollToBottom(messages);
-  const messageLoading: ChatMessage | null = isLoading
-    ? messages.at(-2) || null
-    : null;
 
   return (
     <div className="chat-window">
@@ -112,17 +109,68 @@ export default function ChatWindow({
                       : "chat-window__bubble--assistant"
                   }`}
                 >
-                  {message.content &&
-                    (message.role === "assistant" ? (
-                      // Nếu là AI (backend gửi) -> Dùng ActivityMessage
-                      <ActivityMessage
-                        message={
-                          messageLoading?.content ||
-                          `Đang cập nhật tìm kiếm: ${newSearchTerm}`
-                        }
-                      />
-                    ) : (
-                      // Nếu là User -> Giữ nguyên ReactMarkdown như cũ
+                  {message.role === "assistant" ? (
+                    <>
+                      {!message.content &&
+                        (message.a2ui?.type === "a2ui_processing_status" ||
+                          isLoading) && (
+                          <ActivityMessage
+                            message={
+                              message.a2ui?.type === "a2ui_processing_status"
+                                ? message.a2ui.data.statusText
+                                : `Đang cập nhật tìm kiếm: ${newSearchTerm}`
+                            }
+                          />
+                        )}
+
+                      {message.content && (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            pre: ({ children }) => <>{children}</>,
+                            p: ({ children }) => (
+                              <p className="chat-window__text-paragraph">
+                                {children}
+                              </p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="chat-window__text-strong">
+                                {children}
+                              </strong>
+                            ),
+                            code: ({ className, children }) => {
+                              const language =
+                                className?.replace("language-", "") || "code";
+                              const text = String(children).replace(/\n$/, "");
+                              return className ? (
+                                <CodeBlock code={text} language={language} />
+                              ) : (
+                                <code className="chat-window__text-inline-code">
+                                  {text}
+                                </code>
+                              );
+                            },
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      )}
+
+                      {message.a2ui &&
+                        message.a2ui.type !== "a2ui_processing_status" &&
+                        message.a2ui.type !== "a2ui_done" && (
+                          <div className="chat-window__a2ui-block">
+                            <A2UIRenderer
+                              a2uiPayload={message.a2ui}
+                              onSendHiddenMessage={onSendHiddenMessage}
+                              isLoading={isLoading}
+                            />
+                          </div>
+                        )}
+                    </>
+                  ) : (
+                    // Nếu là User -> Giữ nguyên ReactMarkdown như cũ
+                    message.content && (
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
@@ -153,16 +201,7 @@ export default function ChatWindow({
                       >
                         {message.content}
                       </ReactMarkdown>
-                    ))}
-
-                  {message.a2ui && (
-                    <div className="chat-window__a2ui-block">
-                      <A2UIRenderer
-                        a2uiPayload={message.a2ui}
-                        onSendHiddenMessage={onSendHiddenMessage}
-                        isLoading={isLoading}
-                      />
-                    </div>
+                    )
                   )}
                 </div>
 
